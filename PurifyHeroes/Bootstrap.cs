@@ -30,9 +30,7 @@
 
         private void Game_OnUpdate(EventArgs args)
         {
-            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
-
-            //hero.OnUpdate();
+            hero.OnUpdate();
         }
 
         private void OnClose(object sender, EventArgs e)
@@ -46,8 +44,6 @@
 
         private void OnLoad(object sender, EventArgs e)
         {
-            Game.OnIngameUpdate += Game_OnUpdate;
-            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
             if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Kunkka)
             {
                 hero = new Kunkka();
@@ -60,10 +56,11 @@
             {
                 return;
             }
-            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
+
             hero.OnLoad();
 
             Events.OnClose += OnClose;
+            Game.OnIngameUpdate += Game_OnUpdate;
             Player.OnExecuteOrder += Player_OnExecuteAction;
             Drawing.OnDraw += Drawing_OnDraw;
         }

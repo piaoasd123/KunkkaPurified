@@ -16,6 +16,7 @@ namespace LastHitIndicator
 	{
 		static void Main(string[] args)
 		{
+			Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
 			LastHitIndicatorUI.Init();
 			LastHitIndicator.Init();
 		}

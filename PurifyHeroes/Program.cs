@@ -14,10 +14,6 @@ namespace Heroes
 
         private static void Main()
         {
-            while (true)
-            {
-                Console.Out.WriteLine("OMGOMG");
-            }
             BootstrapInstance.Initialize();
         }
 
