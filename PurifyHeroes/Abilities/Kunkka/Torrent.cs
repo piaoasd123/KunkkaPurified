@@ -1,12 +1,13 @@
-﻿namespace Kunkka.Abilities
+﻿namespace Heroes.Abilities
 {
     using Ensage;
+    using Ensage.Common.AbilityInfo;
     using Ensage.Common.Extensions;
     using Ensage.Common.Objects.UtilityObjects;
 
     using SharpDX;
 
-    internal class GhostShip : IAbility
+    internal class Torrent : IAbility
     {
         #region Fields
 
@@ -16,13 +17,12 @@
 
         #region Constructors and Destructors
 
-        public GhostShip(Ability ability)
+        public Torrent(Ability ability)
         {
             Ability = ability;
             CastPoint = (float)ability.FindCastPoint();
-            Radius = 560;
-            Speed = ability.GetProjectileSpeed();
-            AghanimSpeed = Speed * 4;
+            AdditionalDelay = AbilityDatabase.Find(ability.Name).AdditionalDelay;
+            Radius = ability.GetRadius() + 25;
         }
 
         #endregion
@@ -31,40 +31,43 @@
 
         public Ability Ability { get; }
 
-        public float AghanimSpeed { get; private set; }
+        public double AdditionalDelay { get; }
 
         public bool CanBeCasted => !sleeper.Sleeping && Ability.CanBeCasted();
 
-        public bool Casted => Ability.AbilityState == AbilityState.OnCooldown;
+        public bool Casted => Ability.Cooldown > 5;
 
         public float CastPoint { get; }
 
-        public float CastRange => Ability.GetCastRange() + 150;
+        public float CastRange => Ability.GetCastRange() + 100;
 
         public float Cooldown => Ability.Cooldown;
 
         public float GetSleepTime => CastPoint * 1000 + Game.Ping;
 
-        public double HitTime { get; set; }
-
-        public bool IsInPhase => Ability.IsInAbilityPhase;
-
-        public bool JustCasted => Casted && Ability.Cooldown + 4 >= Ability.CooldownLength;
+        public double HitTime { get; private set; }
 
         public uint ManaCost => Ability.ManaCost;
 
-        public Vector3 Position { get; set; }
-
         public float Radius { get; }
-
-        public float Speed { get; private set; }
 
         #endregion
 
         #region Public Methods and Operators
 
+        public void CalculateHitTime()
+        {
+            var gameTime = Game.RawGameTime;
+
+            if (HitTime <= gameTime)
+            {
+                HitTime = gameTime + AdditionalDelay + CastPoint + Game.Ping / 1000 - 0.085;
+            }
+        }
+
         public void UseAbility(Vector3 targetPosition)
         {
+            CalculateHitTime();
             Ability.UseAbility(targetPosition);
             sleeper.Sleep(GetSleepTime + 300);
         }

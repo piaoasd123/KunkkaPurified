@@ -1,4 +1,4 @@
-﻿namespace Kunkka
+﻿namespace Heroes
 {
     using System;
 
@@ -9,8 +9,7 @@
     {
         #region Fields
 
-        private readonly Kunkka kunkka = new Kunkka();
-
+        private IHero hero;
         #endregion
 
         #region Public Methods and Operators
@@ -26,12 +25,14 @@
 
         private void Drawing_OnDraw(EventArgs args)
         {
-            kunkka.OnDraw();
+            hero.OnDraw();
         }
 
         private void Game_OnUpdate(EventArgs args)
         {
-            kunkka.OnUpdate();
+            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
+
+            //hero.OnUpdate();
         }
 
         private void OnClose(object sender, EventArgs e)
@@ -40,26 +41,36 @@
             Game.OnIngameUpdate -= Game_OnUpdate;
             Player.OnExecuteOrder -= Player_OnExecuteAction;
             Drawing.OnDraw -= Drawing_OnDraw;
-            kunkka.OnClose();
+            hero.OnClose();
         }
 
         private void OnLoad(object sender, EventArgs e)
         {
-            if (ObjectManager.LocalHero.ClassID != ClassID.CDOTA_Unit_Hero_Kunkka)
+            Game.OnIngameUpdate += Game_OnUpdate;
+            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
+            if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Kunkka)
+            {
+                hero = new Kunkka();
+            }
+            else if (ObjectManager.LocalHero.ClassID == ClassID.CDOTA_Unit_Hero_Abaddon)
+            {
+                hero = new Abaddon();
+            }
+            else
             {
                 return;
             }
+            Game.PrintMessage("Not WOrking!!!!!!!!!!!!!!!!!!\n", MessageType.ChatMessage);
+            hero.OnLoad();
 
-            kunkka.OnLoad();
             Events.OnClose += OnClose;
-            Game.OnIngameUpdate += Game_OnUpdate;
             Player.OnExecuteOrder += Player_OnExecuteAction;
             Drawing.OnDraw += Drawing_OnDraw;
         }
 
         private void Player_OnExecuteAction(Player sender, ExecuteOrderEventArgs args)
         {
-            kunkka.OnExecuteAbilitiy(sender, args);
+            hero.OnExecuteAbilitiy(sender, args);
         }
 
         #endregion

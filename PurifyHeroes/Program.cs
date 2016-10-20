@@ -1,4 +1,6 @@
-﻿namespace Kunkka
+﻿using System;
+
+namespace Heroes
 {
     internal class Program
     {
@@ -12,6 +14,10 @@
 
         private static void Main()
         {
+            while (true)
+            {
+                Console.Out.WriteLine("OMGOMG");
+            }
             BootstrapInstance.Initialize();
         }
 

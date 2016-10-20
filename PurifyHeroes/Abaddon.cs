@@ -1,4 +1,7 @@
-﻿namespace Kunkka
+﻿//*
+using Ensage;
+
+namespace Heroes
 {
     using System;
     using System.Collections.Generic;
@@ -11,61 +14,29 @@
     using Ensage.Common.Objects;
     using Ensage.Common.Objects.UtilityObjects;
 
-    using global::Kunkka.Abilities;
+    using global::Heroes.Abilities;
 
     using SharpDX;
 
-    internal class Kunkka
+    internal class Abaddon : IHero
     {
         #region Fields
 
         private readonly List<IAbility> allSpells = new List<IAbility>();
 
-        private readonly List<Vector3> runePositions = new List<Vector3>
-                                                           {
-                                                               new Vector3(-2257, 1661, 128),
-                                                               new Vector3(2798, -2232, 128),
-                                                           };
-
-        private bool arrowCasted;
-
-        private double arrowHitTime;
-
-        private bool comboStarted;
-
-        private GhostShip ghostShip;
-
-        private Hero hero;
-
-        private Team heroTeam;
-
-        private bool hookCasted;
-
-        private double hookHitTime;
-
-        private Hero manualTarget;
-
-        private MenuManager menuManager;
-
+        private AbaddonMenu menuManager;
         private Sleeper sleeper;
 
-        private Hero target;
+        // Hero
+        private Hero hero;
+        private Team heroTeam;
+        private Unit target;
 
-        private bool targetLocked;
-
+        // Heroes Abilities
+        private MistCoil coil;
+        // Misc
         private ParticleEffect targetParticle;
-
-        private TideBringer tideBringer;
-
-        private Torrent torrent;
-
-        private Xmark xMark;
-
-        private Xreturn xReturn;
-
         #endregion
-
-        #region Public Methods and Operators
 
         public void OnClose()
         {
@@ -74,7 +45,6 @@
             targetParticle?.Dispose();
             targetParticle = null;
             target = null;
-            targetLocked = false;
         }
 
         public void OnDraw()
@@ -84,13 +54,9 @@
                 return;
             }
 
-            if (!targetLocked)
-            {
-                target = TargetSelector.ClosestToMouse(hero, 600);
-            }
-
-            if (target == null || xMark.CastRange < hero.Distance2D(target) && !targetLocked || !hero.IsAlive
-                || target.IsLinkensProtected() || target.IsMagicImmune())
+            target = TargetSelector.GetLowestHPCreep(hero, 600);
+            if (target == null || coil.CastRange < hero.Distance2D(target) || !hero.IsAlive
+                || target.IsLinkensProtected() || target.IsMagicImmune() || target.Health > coil.Damage)
             {
                 if (targetParticle != null)
                 {
@@ -109,15 +75,23 @@
             targetParticle.SetControlPoint(2, hero.Position);
             targetParticle.SetControlPoint(6, new Vector3(1, 0, 0));
             targetParticle.SetControlPoint(7, target.Position);
+            /*
+            
+
+            
+
+            
+            */
         }
 
         public void OnExecuteAbilitiy(Player sender, ExecuteOrderEventArgs args)
         {
+
             if (!sender.Equals(hero.Player) || !menuManager.IsEnabled)
             {
                 return;
             }
-
+            /*
             manualTarget = null;
 
             var order = args.Order;
@@ -148,6 +122,7 @@
             {
                 ghostShip.Position = hero.Position.Extend(args.TargetPosition, ghostShip.CastRange);
             }
+            */
         }
 
         public void OnLoad()
@@ -155,26 +130,25 @@
             hero = ObjectManager.LocalHero;
             heroTeam = hero.Team;
             sleeper = new Sleeper();
-            menuManager = new MenuManager(hero.Name);
-
-            allSpells.Add(torrent = new Torrent(hero.Spellbook.SpellQ));
-            allSpells.Add(tideBringer = new TideBringer(hero.Spellbook.SpellW));
-            allSpells.Add(xMark = new Xmark(hero.Spellbook.Spells.First(x => x.Name == "kunkka_x_marks_the_spot")));
-            allSpells.Add(xReturn = new Xreturn(hero.Spellbook.Spells.First(x => x.Name == "kunkka_return")));
-            allSpells.Add(ghostShip = new GhostShip(hero.Spellbook.SpellR));
+            menuManager = new AbaddonMenu(hero.Name);
+            allSpells.Add(coil = new MistCoil(hero.Spellbook.SpellQ));
         }
 
         public void OnUpdate()
         {
-            if (sleeper.Sleeping)
+            /*
+            // Housekeeping...
             {
-                return;
-            }
+                if (sleeper.Sleeping)
+                {
+                    return;
+                }
 
-            if (Game.IsPaused || !hero.IsAlive || !hero.CanCast() || hero.IsChanneling() || !menuManager.IsEnabled)
-            {
-                sleeper.Sleep(333);
-                return;
+                if (Game.IsPaused || !hero.IsAlive || !hero.CanCast() || hero.IsChanneling() || !menuManager.IsEnabled)
+                {
+                    sleeper.Sleep(333);
+                    return;
+                }
             }
 
             if (!xMark.PositionUpdated && targetLocked)
@@ -206,31 +180,7 @@
                 return;
             }
 
-            if (menuManager.TpHomeEanbled)
-            {
-                var teleport = hero.FindItem("item_travel_boots")
-                               ?? hero.FindItem("item_travel_boots_2") ?? hero.FindItem("item_tpscroll");
-
-                if (teleport != null && teleport.CanBeCasted() && xMark.CanBeCasted)
-                {
-                    var fountain =
-                        ObjectManager.GetEntities<Unit>()
-                            .FirstOrDefault(
-                                x =>
-                                x.Team == heroTeam && x.ClassID == ClassID.CDOTA_Unit_Fountain
-                                && x.Distance2D(hero) > 2000);
-
-                    if (fountain == null)
-                    {
-                        return;
-                    }
-
-                    xMark.UseAbility(hero);
-                    teleport.UseAbility(fountain, true);
-                    sleeper.Sleep(1000);
-                    return;
-                }
-            }
+            TPHandler();
 
             if (menuManager.HitAndRunEnabled)
             {
@@ -528,59 +478,21 @@
             }
 
             sleeper.Sleep(50);
+            */
         }
-
-        #endregion
-
-        #region Methods
-
-        private double CalculateHitTime(Unit unit, Ability ability, float gameTime, float adjustCastPoint = 1)
-        {
-            var abilityEndPosition = unit.InFront(ability.GetCastRange() + 150);
-
-            var unitAbilityEnd = unit.Distance2D(abilityEndPosition);
-            var unitTarget = unit.Distance2D(xMark.Position);
-            var targetAbilityEnd = xMark.Position.Distance2D(abilityEndPosition);
-
-            if (Math.Abs(unitTarget + targetAbilityEnd - unitAbilityEnd) < 10)
-            {
-                return gameTime + ability.FindCastPoint() * adjustCastPoint
-                       + (unitTarget - ability.GetRadius()) / ability.GetProjectileSpeed();
-            }
-
-            return 0;
-        }
-
-        private bool CheckCombo(bool fullCombo, bool comboContinue)
-        {
-            if (torrent.Cooldown > 2)
-            {
-                return false;
-            }
-
-            if (ghostShip.Cooldown > 2 && fullCombo)
-            {
-                return false;
-            }
-
-            if (!xMark.CanBeCasted && !comboContinue)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private Unit GetTorrentThinker()
-        {
-            return
-                ObjectManager.GetEntities<Unit>()
-                    .FirstOrDefault(
-                        x =>
-                        x.ClassID == ClassID.CDOTA_BaseNPC
-                        && x.Modifiers.Any(z => z.Name == "modifier_kunkka_torrent_thinker") && x.Team == heroTeam);
-        }
-
-        #endregion
     }
+}
+//*/
+
+public interface IHero
+{
+    void OnClose();
+
+    void OnDraw();
+
+    void OnExecuteAbilitiy(Player sender, ExecuteOrderEventArgs args);
+
+    void OnLoad();
+
+    void OnUpdate();
 }

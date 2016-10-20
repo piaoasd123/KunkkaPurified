@@ -92,7 +92,13 @@ namespace LastHitIndicator
 			}
 			float newMin = inc.getMin() * (1 - resistance);
 			float newMax = inc.getMax() * (1 - resistance);
+
 			Damage result = new Damage(inc.getDamageType(), newMin, newMax);
+
+			if (unit.ClassID == ClassID.CDOTA_BaseNPC_Creep_Siege)
+			{
+				result = new Damage(inc.getDamageType(), newMin / 2, newMax / 2);
+			}
 
 			return result;
 		}

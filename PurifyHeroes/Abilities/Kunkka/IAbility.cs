@@ -1,4 +1,4 @@
-﻿namespace Kunkka.Abilities
+﻿namespace Heroes.Abilities
 {
     using Ensage;
 

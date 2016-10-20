@@ -1,13 +1,13 @@
-﻿namespace Kunkka.Abilities
+﻿namespace Heroes.Abilities
 {
     using Ensage;
     using Ensage.Common.Extensions;
 
-    internal class TideBringer : IAbility
+    internal class MistCoil : IAbility
     {
         #region Constructors and Destructors
 
-        public TideBringer(Ability ability)
+        public MistCoil(Ability ability)
         {
             Ability = ability;
         }
@@ -23,7 +23,8 @@
         public bool Casted => Ability.AbilityState == AbilityState.OnCooldown;
 
         public float CastPoint { get; } = 0;
-
+        public float CastRange => Ability.Level > 0 ? Ability.GetCastRange() + 100 : 0;
+        public int Damage => Ability.Level > 0 ? Ability.GetDamage(Ability.Level) : 0;
         public uint ManaCost { get; } = 0;
 
         #endregion
